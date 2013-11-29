@@ -1,17 +1,18 @@
 package com.raphaelkargon.crypto;
 import java.math.BigInteger;
 import java.security.*;
+import java.util.Random;
 
 /**
  * Implements RSA encryption using BigIntegers. Can be used as an object, which
  * contains the public and private keys as member objects, or statically, passing
  * BigInteger keys to the encrypt and decrypt functions as necessary.
- * 
+ * <br>
  * NOTE: RSA can only encrypt and decrypt a message that is shorter than the bit-ength of the modulus. 
  * Thus, 1024-bit RSA can only encrypt 1024/8 = 128 ASCII character strings. RSA is not 
  * used to encrypt whole files or long messages. Instead, other algorithms are used to encrypt these
  * messages, and RSA is used to transmit the encryption keys securely between parties.
- *
+ *<br><br>
  * TODO: Add padding algorithm to make the encryption more secure. 
  * 
  * @author Raphael Kargon
