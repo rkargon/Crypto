@@ -1,5 +1,10 @@
 package com.raphaelkargon.crypto;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -57,6 +62,8 @@ public class MD5 {
 		
 		/* MESSAGE PADDING */
 		
+		long time_init=System.nanoTime();
+		
 		//determines the new length of the message, minus the 64 bits at the end
 		for(newlength=bytelength+1; newlength%64 != 56; newlength++);
 		paddedlength = newlength+8;
@@ -68,6 +75,8 @@ public class MD5 {
 		for(int i=bytelength+1; i<newlength; i++) paddedmsg[i]=0;//append 0s to message until bit length is 64 bits short of multiple of 512
 		for(int i=0; i<8; i++) paddedmsg[newlength+i]=(byte)(bitlength>>(8*i));//add length of original message to last 64 bits
 		
+		System.out.println("Padding: "+(System.nanoTime()-time_init)/1000000000.0+" seconds");
+		time_init = System.nanoTime();
 		/* HASHING */
 
 		//final hash values
@@ -119,7 +128,7 @@ public class MD5 {
 			d_f += d;
 			
 		}
-		
+		System.out.println("Hashing: "+(System.nanoTime()-time_init)/1000000000.0+" seconds");
 
 		ByteBuffer hashbuffer = ByteBuffer.allocate(16);
 		hashbuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -131,6 +140,20 @@ public class MD5 {
 		byte[] hash=hashbuffer.array();
 		return hash;
 	}
+	
+	/**
+	 * TODO: Create method of reading MD5 hash of byte stream
+	 * 
+	 * @return The 16-byte hash result
+	 */
+	public static byte[] MD5HashStreaming(){return null;}
+	
+	/**
+	 * TODO: Create method of reading MD5 hash of file stream
+	 * 
+	 * @return The 16-byte hash result
+	 */
+	//public static byte[] MD5HashStreaming(){return null;}
 	
 	/**
 	 * calculates the MD5 hash of a string by converting it to a byte array 
@@ -227,12 +250,25 @@ public class MD5 {
 	}
 	
 	/**
-	 * Tests the MD5 class with known values. Similar to "md5 -x" in command prompt
+	 * Tests the MD5 class.
 	 * 
-	 * @param args the filename of the file being hashed
+	 * If no argument is passed, it tests known hash values and does a time trial,
+	 * like "md5 -xt" in terminal.
+	 * If there is an argument, attempts to open passed filename and read hash of that.
 	 */
 	public static void main(String[] args) {
 
+		if(args.length>0){
+			try {
+				byte[] barr = Files.readAllBytes(Paths.get(args[0]));
+				System.out.println(byteArrayToHexString(MD5Hash(barr)));
+				System.out.println();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			System.exit(0);
+		}
+		
 		String[] tests={"", "a", "abc", "message digest", "abcdefghijklmnopqrstuvwxyz", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", "12345678901234567890123456789012345678901234567890123456789012345678901234567890", "MD5 has not yet (2001-09-03) been broken, but sufficient attacks have been made that its security is in some doubt", "MD5 has (2013-11-29) been broken and is no longer cryptographically secure"};
 		String[] testhashes={"d41d8cd98f00b204e9800998ecf8427e", "0cc175b9c0f1b6a831c399e269772661", "900150983cd24fb0d6963f7d28e17f72", "f96b697d7cb7938d525a2f31aaf161d0", "c3fcd3d76192e4007dfb496cca67e13b", "d174ab98d277d9f5a5611c2c9f419d9f", "57edf4a22be3c955ac49da2e2107b67a", "b50663f41d44d92171cb9976bc118538", "cc933090abb10c1b3e4886b1b10bd6cf"};
 
@@ -243,6 +279,18 @@ public class MD5 {
 			System.out.println();
 		}
 		
+		byte[] timetrial = new byte[10_000];
+		System.out.println("\nSpeed Test: Digesting 100,000 blocks of 10,000 bytes each...");
+		
+		long init_time = System.nanoTime();
+		for(int i=1; i<=100_000; i++){
+			MD5Hash(timetrial);
+		}
+		long elapsed_time = System.nanoTime()-init_time;
+		System.out.println("Time: "+elapsed_time/1_000_000_000.+" seconds");
+		
+		long bytes = 10_000*100_000;
+		System.out.println("Speed: "+bytes*1_000_000_000/elapsed_time+" bytes/second");
 	}
 
 	/**
