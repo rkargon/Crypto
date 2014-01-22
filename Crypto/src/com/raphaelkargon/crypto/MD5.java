@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
@@ -323,8 +324,8 @@ public class MD5{
 
 		paddedmsg = new byte[paddedlength];
 
-		for (int i = 0; i < bytelength; i++)
-			paddedmsg[i] = msg[i]; // copy original message
+		System.arraycopy(msg, 0, paddedmsg, 0, msg.length);
+		
 		paddedmsg[bytelength] = -128;// append 1 bit to message. In
 										// two's-complement format, -128 =
 										// 10000000.
